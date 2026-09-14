@@ -21,8 +21,12 @@ jobs:
       - run: python3 scripts/package.py --version "$VERSION"
         env:
           VERSION: ${{ inputs.version }}
+      - name: Sign manifest (required)
+        run: node scripts/sign.mjs
+        env:
+          APP_SIGNING_PRIVATE_KEY: ${{ secrets.APP_SIGNING_PRIVATE_KEY }}
       - name: Publish preview
-        run: gh release create "v$VERSION" dist/manifest.json dist/SHA256SUMS --target "$GITHUB_SHA" --prerelease --title "Argo CD $VERSION" --notes-file CHANGELOG.md
+        run: gh release create "v$VERSION" dist/manifest.json dist/manifest.json.sig dist/SHA256SUMS --target "$GITHUB_SHA" --prerelease --title "Argo CD $VERSION" --notes-file CHANGELOG.md
         env:
           VERSION: ${{ inputs.version }}
           GH_TOKEN: ${{ github.token }}

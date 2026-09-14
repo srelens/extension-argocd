@@ -1,0 +1,12 @@
+import {createPrivateKey,createPublicKey,sign,verify} from 'node:crypto';
+import {readFileSync,writeFileSync} from 'node:fs';
+if (!process.env.APP_SIGNING_PRIVATE_KEY) throw new Error('APP_SIGNING_PRIVATE_KEY is required; refusing an unsigned release');
+const key=createPrivateKey(process.env.APP_SIGNING_PRIVATE_KEY);
+if(key.asymmetricKeyType !== 'ed25519') throw new Error('Expected an Ed25519 signing key');
+const trusted=createPublicKey(readFileSync(new URL('../signing-public.pem',import.meta.url)));
+if(!createPublicKey(key).export({format:'der',type:'spki'}).equals(trusted.export({format:'der',type:'spki'}))) throw new Error('Signing key does not match published app key');
+const raw=readFileSync('dist/manifest.json');
+const signature=sign(null,raw,key);
+if(!verify(null,raw,trusted,signature)) throw new Error('Signature verification failed');
+writeFileSync('dist/manifest.json.sig',signature);
+console.log('Signed and verified dist/manifest.json');

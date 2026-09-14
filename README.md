@@ -58,3 +58,16 @@ no permissions and may point to independently maintained community repositories.
 
 Rich host-rendered details and guarded actions depend on additions to the native
 srelens contract. See [ROADMAP.md](ROADMAP.md). This preview exposes reads only.
+
+## Publisher signatures
+
+Official releases include a detached Ed25519 signature, `manifest.json.sig`,
+over the exact bytes of `manifest.json`. The public key is in
+`signing-public.pem` and pinned in the srelens host. SHA256SUMS detects download
+corruption; the signature authenticates the publisher. Installation still
+requires explicit permission review.
+
+The release workflow requires the repository secret `APP_SIGNING_PRIVATE_KEY`
+(PKCS#8 PEM) and fails if it is absent or does not match the published key.
+Never commit the private key. Rotate by publishing a host trust-key update
+before releasing manifests signed by the replacement key.

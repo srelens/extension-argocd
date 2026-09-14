@@ -1,0 +1,28 @@
+name: Release preview manifest
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Exact version in manifest.json
+        required: true
+        type: string
+permissions:
+  contents: read
+jobs:
+  validate:
+    uses: ./.github/workflows/validate.yml
+  release:
+    needs: validate
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - run: python3 scripts/package.py --version "$VERSION"
+        env:
+          VERSION: ${{ inputs.version }}
+      - name: Publish preview
+        run: gh release create "v$VERSION" dist/manifest.json dist/SHA256SUMS --target "$GITHUB_SHA" --prerelease --title "Argo CD $VERSION" --notes-file CHANGELOG.md
+        env:
+          VERSION: ${{ inputs.version }}
+          GH_TOKEN: ${{ github.token }}

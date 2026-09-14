@@ -1,0 +1,6 @@
+{
+  "hostRepository": "srelens/srelens",
+  "hostRevision": "29ef2ea1ce3327fd67e9d21980878653e04fe422",
+  "sourcePath": "examples/extensions/argocd.json",
+  "extensionId": "org.srelens.argocd"
+}

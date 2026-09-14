@@ -1,0 +1,32 @@
+name: Validate native extension
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_call:
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - run: python3 -m unittest discover -s tests
+      - name: Read pinned host revision
+        id: host
+        run: python3 -c 'import json,os; m=json.load(open("compatibility.json")); open(os.environ["GITHUB_OUTPUT"],"a").write("revision="+m["hostRevision"]+"\n")'
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: srelens/srelens
+          ref: ${{ steps.host.outputs.revision }}
+          path: .host
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772
+        with:
+          toolchain: stable
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6
+        with:
+          workspaces: .host
+      - run: python3 scripts/validate.py
+      - name: Package current manifest
+        run: python3 scripts/package.py --version "$(python3 -c 'import json; print(json.load(open("manifest.json"))["version"])')"

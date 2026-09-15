@@ -6,8 +6,8 @@ documentation and independent releases. Discovery metadata lives in
 
 ## Preview compatibility
 
-This initial version requires the extension-platform build from
-[srelens PR #508](https://github.com/srelens/srelens/pull/508).
+This version requires a srelens build with the `detailLinks` contribution
+([srelens PR #598](https://github.com/srelens/srelens/pull/598)).
 The exact tested host commit is recorded in `compatibility.json`; API requirement:
 `^0.1`. Do not assume released app versions include this platform yet.
 The Kubernetes controllers and matching CRDs must already be installed.
@@ -38,7 +38,7 @@ Clone `srelens/srelens` into `.host`, check out `hostRevision` from
 ```sh
 python3 -m unittest discover -s tests
 python3 scripts/validate.py
-python3 scripts/package.py --version 0.1.0
+python3 scripts/package.py --version 0.2.0
 ```
 
 Validation uses the actual srelens manifest parser and capability broker. It

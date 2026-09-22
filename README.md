@@ -1,29 +1,28 @@
 # Argo CD for srelens
 
-Native, read-only srelens extension. This repository owns the manifest, tests,
+Native srelens extension with explicitly granted, host-confirmed GitOps actions. This repository owns the manifest, tests,
 documentation and independent releases. Discovery metadata lives in
 [srelens/extensions](https://github.com/srelens/extensions).
 
 ## Preview compatibility
 
-This version requires a srelens build with the `detailLinks` contribution
-([srelens PR #598](https://github.com/srelens/srelens/pull/598)).
-The exact tested host commit is recorded in `compatibility.json`; API requirement:
-`^0.1`. Do not assume released app versions include this platform yet.
+This version requires the declarative action host from
+[srelens #551](https://github.com/srelens/srelens/issues/551), extension API `^0.3`.
+The exact tested host commit is recorded in `compatibility.json`. Earlier API
+hosts cannot install this version; no compatibility alias is provided.
 The Kubernetes controllers and matching CRDs must already be installed.
 
 ## Install
 
-1. Download `manifest.json` and `SHA256SUMS` from this repository's release.
-2. Verify with `sha256sum -c SHA256SUMS` (macOS: `shasum -a 256 -c SHA256SUMS`).
-3. In the compatible desktop app, enable developer mode in Settings → Extensions.
-4. Paste the manifest JSON, review its requested read permissions, and install.
-5. Connect the desired cluster and open the extension's pages.
+Once this version is published in the catalog, install it through a compatible
+host's app catalog. Review the requested read and write grants before installing
+or updating. Connect the desired cluster and open the extension's pages.
 
-No Freelens archive, third-party renderer, or npm package is required. Checksums
-verify file integrity; these preview manifests are unsigned. The app owns grant
-review, credentials, settings persistence, rendering and lifecycle enforcement.
-The catalog is not yet integrated into the app installer.
+Official release assets include `manifest.json`, its detached Ed25519 signature
+`manifest.json.sig`, and `SHA256SUMS`. The host verifies the publisher and retains
+control of grants, cluster scope, credentials, rendering and mutation confirmation.
+Reading a kind does not implicitly authorize writes; each declared action needs
+its primitive's explicit grant, and each mutation uses the host confirmation.
 
 ## Pages
 
@@ -38,7 +37,7 @@ Clone `srelens/srelens` into `.host`, check out `hostRevision` from
 ```sh
 python3 -m unittest discover -s tests
 python3 scripts/validate.py
-python3 scripts/package.py --version 0.2.0
+python3 scripts/package.py --version 0.3.0
 ```
 
 Validation uses the actual srelens manifest parser and capability broker. It
@@ -50,14 +49,19 @@ only after checking the new contract. Preserve the extension ID on updates.
 
 Increment the manifest version and changelog through a PR. Run the **Release
 preview manifest** workflow with that version after validation. It publishes a
-versioned manifest and checksums, then submit a separate catalog PR with the new
+versioned manifest, publisher signature and checksums, then submit a separate catalog PR with the new
 version, asset URL, checksum and tested host revision. Catalog inclusion grants
 no permissions and may point to independently maintained community repositories.
 
-## Next
+## Declared actions
 
-Rich host-rendered details and guarded actions depend on additions to the native
-srelens contract. See [ROADMAP.md](ROADMAP.md). This preview exposes reads only.
+Refresh status, Hard refresh and Sync are declared for Applications. Sync is
+refused while an operation is already present, never enables pruning, and uses
+the hook strategy rather than replacement.
+
+Availability is shown before confirmation; the host rechecks preconditions and
+reviewed resource identity before writing. This manifest cannot execute arbitrary
+code or change the host guards.
 
 ## Publisher signatures
 

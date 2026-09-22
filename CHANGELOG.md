@@ -1,3 +1,11 @@
+# 0.3.0 — declared GitOps actions
+
+Moves actions into the manifest with explicit primitive grants and preconditions,
+using extension API `^0.3`. The host owns confirmation and stale-resource checks;
+reading a resource no longer implies write access. The exact tested host revision
+is pinned in `compatibility.json`. New release assets must be signed by the
+existing publisher key; previously published assets are not replaced.
+
 # 0.2.0 — detail links
 
 Renamed the `rowActions` contribution to `detailLinks`, the read-only links in a resource's detail view

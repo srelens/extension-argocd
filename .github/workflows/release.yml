@@ -1,4 +1,4 @@
-name: Release preview manifest
+name: Release signed app package
 on:
   workflow_dispatch:
     inputs:
@@ -21,12 +21,28 @@ jobs:
       - run: python3 scripts/package.py --version "$VERSION"
         env:
           VERSION: ${{ inputs.version }}
-      - name: Sign manifest (required)
+      - name: Read tested host revision
+        id: host
+        run: python3 -c 'import json, os; open(os.environ["GITHUB_OUTPUT"], "a").write("revision=" + json.load(open("compatibility.json"))["hostRevision"] + "\n")'
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: srelens/srelens
+          ref: ${{ steps.host.outputs.revision }}
+          path: .host
+      - run: rustup toolchain install stable --profile minimal && rustup default stable
+      - name: Digest package with the native host
+        run: cargo run --locked --manifest-path .host/Cargo.toml -p srelens-registry --example pack-extension -- digests dist/package
+      - name: Sign manifest and package (required)
         run: node scripts/sign.mjs
         env:
           APP_SIGNING_PRIVATE_KEY: ${{ secrets.APP_SIGNING_PRIVATE_KEY }}
+      - name: Build and verify package
+        run: |
+          cargo run --locked --manifest-path .host/Cargo.toml -p srelens-registry --example pack-extension -- pack dist/package dist/argocd.srelens-extension
+          cd dist
+          sha256sum argocd.srelens-extension >> SHA256SUMS
       - name: Publish preview
-        run: gh release create "v$VERSION" dist/manifest.json dist/manifest.json.sig dist/SHA256SUMS --target "$GITHUB_SHA" --prerelease --title "Argo CD $VERSION" --notes-file CHANGELOG.md
+        run: gh release create "v$VERSION" dist/manifest.json dist/manifest.json.sig dist/argocd.srelens-extension dist/SHA256SUMS --target "$GITHUB_SHA" --prerelease --title "Argo CD $VERSION" --notes-file CHANGELOG.md
         env:
           VERSION: ${{ inputs.version }}
           GH_TOKEN: ${{ github.token }}

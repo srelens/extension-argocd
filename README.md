@@ -37,7 +37,7 @@ Clone `srelens/srelens` into `.host`, check out `hostRevision` from
 ```sh
 python3 -m unittest discover -s tests
 python3 scripts/validate.py
-python3 scripts/package.py --version 0.3.0
+python3 scripts/package.py --version 0.3.1
 ```
 
 Validation uses the actual srelens manifest parser and capability broker. It
@@ -47,10 +47,11 @@ only after checking the new contract. Preserve the extension ID on updates.
 
 ## Releases
 
-Increment the manifest version and changelog through a PR. Run the **Release
-preview manifest** workflow with that version after validation. It publishes a
-versioned manifest, publisher signature and checksums, then submit a separate catalog PR with the new
-version, asset URL, checksum and tested host revision. Catalog inclusion grants
+Increment the manifest version and changelog. Run the **Release signed app
+package** workflow with that version after validation. It publishes a signed
+manifest and `.srelens-extension` package containing the official logo, with
+checksums. Update the signed catalog with the version, manifest/package asset
+URLs and checksums, and the tested host revision. Catalog inclusion grants
 no permissions and may point to independently maintained community repositories.
 
 ## Declared actions
@@ -75,3 +76,5 @@ The release workflow requires the repository secret `APP_SIGNING_PRIVATE_KEY`
 (PKCS#8 PEM) and fails if it is absent or does not match the published key.
 Never commit the private key. Rotate by publishing a host trust-key update
 before releasing manifests signed by the replacement key.
+
+The signed `.srelens-extension` package includes the official Argo CD icon from [CNCF artwork](https://github.com/cncf/artwork/tree/main/projects/argo/icon/color). Project names and logos belong to their respective owners. Updating from a manifest-only installation installs the packaged logo.

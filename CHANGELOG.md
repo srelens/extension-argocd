@@ -1,3 +1,10 @@
+## 0.3.1
+
+Signed `.srelens-extension` packages now include the official project logo,
+README and license, covered by the publisher signature and package checksum.
+Manifest releases remain available. Update an existing manifest installation
+to this version to install the packaged logo.
+
 # 0.3.0 — declared GitOps actions
 
 Moves actions into the manifest with explicit primitive grants and preconditions,

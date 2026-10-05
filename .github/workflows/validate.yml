@@ -31,3 +31,7 @@ jobs:
       - run: python3 scripts/validate.py
       - name: Package current manifest
         run: python3 scripts/package.py --version "$(python3 -c 'import json; print(json.load(open("manifest.json"))["version"])')"
+      - name: Validate package assets with the native host
+        run: |
+          python3 scripts/package.py --version "$(python3 -c 'import json; print(json.load(open("manifest.json"))["version"])')"
+          cargo run --locked --manifest-path .host/Cargo.toml -p srelens-registry --example pack-extension -- digests dist/package

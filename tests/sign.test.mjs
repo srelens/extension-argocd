@@ -14,10 +14,17 @@ test('release signing requires the matching key and signs exact bytes',()=>{
   writeFileSync(join(dir,'signing-public.pem'),publicKey.export({type:'spki',format:'pem'}));
   const raw=Buffer.from('{"id":"test.app"}\n');
   writeFileSync(join(dir,'dist/manifest.json'),raw);
+  mkdirSync(join(dir,'dist/package'));
+  const digests=Buffer.from('{"formatVersion":1,"files":[]}\n');
+  writeFileSync(join(dir,'dist/package/digests.json'),digests);
   const run=key=>spawnSync(process.execPath,['scripts/sign.mjs'],{cwd:dir,env:{...process.env,APP_SIGNING_PRIVATE_KEY:key},encoding:'utf8'});
   assert.notEqual(run('').status,0);
   assert.notEqual(run(generateKeyPairSync('ed25519').privateKey.export({type:'pkcs8',format:'pem'})).status,0);
   assert.equal(run(privateKey.export({type:'pkcs8',format:'pem'})).status,0);
+  const packageSig=readFileSync(join(dir,'dist/package/digests.json.sig'));
+  assert.equal(packageSig.length,64);
+  assert.equal(verify(null,digests,publicKey,packageSig),true);
+  assert.equal(verify(null,Buffer.from('modified digests'),publicKey,packageSig),false);
   const sig=readFileSync(join(dir,'dist/manifest.json.sig'));
   assert.equal(sig.length,64);assert.equal(verify(null,raw,publicKey,sig),true);
   assert.equal(verify(null,Buffer.concat([raw,Buffer.from(' ')]),publicKey,sig),false);
